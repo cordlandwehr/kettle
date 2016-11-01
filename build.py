@@ -45,7 +45,7 @@ print "\n== Configuring Build\n"
 if not manager.configure_build():
     sys.exit("Configuration exited with non-zero code, assuming failure to configure for project %s." % arguments.project)
 
-# Configure the build
+# Perform the build
 print "\n== Perform Build\n"
 if not manager.perform_build():
     sys.exit("Building exited with non-zero code, assuming failure to build the project %s." % arguments.project)

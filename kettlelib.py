@@ -37,6 +37,8 @@ class BuildManager(object):
         self.sourceDirectory = os.path.abspath( os.path.join("source", self.project) )
 
     def configure_build(self):
+        """Calls the met-build system (e.g. CMake) to generate the Makefiles"""
+
         # determine the directory we will perform the build in and make sure it exists
         buildDirectory = self.buildDirectory
         if not os.path.exists( buildDirectory ):
@@ -55,6 +57,8 @@ class BuildManager(object):
         return True
 
     def perform_build(self):
+        """Calls make to perform the actual build"""
+
         # build directory must exist after configuration
         buildDirectory = self.buildDirectory
         buildCommand = [ 'make' ]
