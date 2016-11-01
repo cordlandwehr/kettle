@@ -21,10 +21,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os
-import sys
+import configparser
 import multiprocessing
+import os
 import subprocess
+import sys
 
 class BuildManager(object):
     # Make sure we have our configuration and the project we are building available
@@ -35,6 +36,33 @@ class BuildManager(object):
         # TODO add configuration
         self.buildDirectory = os.path.join("build", self.project)
         self.sourceDirectory = os.path.abspath( os.path.join("source", self.project) )
+        self.environment = self.generate_environment()
+
+        print("== Build Environment")
+        for name, value in self.environment.items():
+            print("export " + name + "=" + value)
+
+    def generate_environment(self):
+        """Generate and return configuration and build environment"""
+
+        # these values are loaded from the system and optionally prefixed from configuration files
+        systemEnvVariables = [
+            'CMAKE_PREFIX_PATH', 'XDG_CONFIG_DIRS', 'XDG_DATA_DIRS', 'PATH', 'LD_LIBRARY_PATH', 'PKG_CONFIG_PATH', 'PYTHONPATH',
+            'PERL5LIB', 'QT_PLUGIN_PATH', 'QML_IMPORT_PATH', 'QML2_IMPORT_PATH', 'QMAKEFEATURES', 'PYTHON3PATH', 'CPLUS_INCLUDE_PATH'
+        ]
+        environment = {}
+        for var in systemEnvVariables:
+            environment[var] = os.getenv(var, "")
+
+        # update environment with
+        envConfig = configparser.SafeConfigParser()
+        envConfig.read(['config/platform/' + self.platform + '.cfg', 'environment.cfg'])
+        for var, value in envConfig.items("Default"):
+            if var in environment:
+                environment[var] = value + ":" + environment[var]
+            else:
+                environment[var] = value
+        return environment
 
     def configure_build(self):
         """Calls the met-build system (e.g. CMake) to generate the Makefiles"""
@@ -49,8 +77,8 @@ class BuildManager(object):
         configureCommand.append( self.sourceDirectory )
 
         try:
-            print configureCommand
-            process = subprocess.check_call( configureCommand, stdout=sys.stdout, stderr=sys.stderr, cwd=buildDirectory )
+            print(configureCommand)
+            process = subprocess.check_call(configureCommand, stdout=sys.stdout, stderr=sys.stderr, cwd=buildDirectory, env=self.environment)
         except subprocess.CalledProcessError:
             # Abort if it fails to complete
             return False
@@ -63,8 +91,8 @@ class BuildManager(object):
         buildDirectory = self.buildDirectory
         buildCommand = [ 'make' ]
         try:
-            print buildCommand
-            process = subprocess.check_call( buildCommand, stdout=sys.stdout, stderr=sys.stderr, cwd=buildDirectory )
+            print(buildCommand)
+            process = subprocess.check_call(buildCommand, stdout=sys.stdout, stderr=sys.stderr, cwd=buildDirectory, env=self.environment)
         except subprocess.CalledProcessError:
             # Abort if it fails to complete
             return False

@@ -37,15 +37,15 @@ arguments = parser.parse_args( )
 manager = BuildManager(arguments.project, arguments.platform)
 
 # initial status information
-print "\nKettle Tool starting..."
-print "== Building Project: %s" %(arguments.project)
+print("\nKettle Tool starting...")
+print("== Building Project: %s" %(arguments.project))
 
 # Configure the build
-print "\n== Configuring Build\n"
+print("\n== Configuring Build\n")
 if not manager.configure_build():
     sys.exit("Configuration exited with non-zero code, assuming failure to configure for project %s." % arguments.project)
 
 # Perform the build
-print "\n== Perform Build\n"
+print("\n== Perform Build\n")
 if not manager.perform_build():
     sys.exit("Building exited with non-zero code, assuming failure to build the project %s." % arguments.project)
