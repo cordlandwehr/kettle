@@ -95,10 +95,10 @@ class BuildManager(object):
             print("VCS system different to git, aborting since git is only supported system right now")
             return False
 
-        if not os.path.exists(self.buildDirectory) and self.projectVcsUrl != '':
+        if not os.path.exists(self.sourceDirectory) and self.projectVcsUrl != '':
             try:
                 print("checking out to: " + self.sourceDirectory)
-                process = subprocess.check_call(["git", "clone", self.projectVcsUrl] + self.sourceDirectory, stdout=sys.stdout, stderr=sys.stderr, cwd=buildDirectory)
+                process = subprocess.check_call(["git", "clone", self.projectVcsUrl, self.sourceDirectory], stdout=sys.stdout, stderr=sys.stderr)
             except subprocess.CalledProcessError:
                 # Abort if it fails to complete
                 return False
