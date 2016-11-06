@@ -33,14 +33,38 @@ class BuildManager(object):
         # save them for later use
         self.project = project
         self.platform = platform
-        # TODO add configuration
+
+        # generate build environment
         self.buildDirectory = os.path.join("build", self.project)
         self.sourceDirectory = os.path.abspath( os.path.join("source", self.project) )
         self.environment = self.generate_environment()
-
-        print("== Build Environment")
+        print("== Build Environment: " + self.project)
         for name, value in self.environment.items():
             print("export " + name + "=" + value)
+
+        # read project configuration
+        print("== Parsing Project Configuration ")
+        projectConfig = configparser.SafeConfigParser()
+        projectConfig.read(['local/project/' + self.project + '.cfg', 'local/project/' + self.project + '.cfg'])
+        # get VCS system
+        if not projectConfig.has_option('Project', 'vcs'):
+            self.projectVcs = 'git'
+            print('- \"vcs\" key missing: falling back to \"git\"')
+        else:
+            self.projectVcs = projectConfig.get('Project', 'vcs')
+        # get optional VCS URL
+        if not projectConfig.has_option('Project', 'vcsUrl'):
+            self.projectVcsUrl = ''
+            print('- \"vcsUrl\" key missing: will not be able to update or checkout source code')
+        else:
+            self.projectVcsUrl = projectConfig.get('Project', 'vcsUrl')
+        # get build system (CMake for QMake)
+        if not projectConfig.has_option('Project', 'buildSystem'):
+            self.projectBuildSystem = ''
+            print('- \"buildSystem\" key missing: cannot perform build')
+        else:
+            self.projectBuildSystem = projectConfig.get('Project', 'buildSystem')
+        return
 
     def generate_environment(self):
         """Generate and return configuration and build environment"""
@@ -56,7 +80,7 @@ class BuildManager(object):
 
         # update environment with
         envConfig = configparser.SafeConfigParser()
-        envConfig.read(['config/platform/' + self.platform + '.cfg', 'environment.cfg'])
+        envConfig.read(['config/platform/' + self.platform + '.cfg', 'local/platform' + self.platform, 'environment.cfg'])
         for var, value in envConfig.items("Default"):
             if var in environment:
                 environment[var] = value + ":" + environment[var]
@@ -64,16 +88,39 @@ class BuildManager(object):
                 environment[var] = value
         return environment
 
+    def update_sources(self):
+        """Initialize source control system or update sources if already checked out"""
+
+        if not self.projectVcs == "git":
+            print("VCS system different to git, aborting since git is only supported system right now")
+            return False
+
+        if not os.path.exists(self.buildDirectory) and self.projectVcsUrl != '':
+            try:
+                print("checking out to: " + self.sourceDirectory)
+                process = subprocess.check_call(["git", "clone", self.projectVcsUrl] + self.sourceDirectory, stdout=sys.stdout, stderr=sys.stderr, cwd=buildDirectory)
+            except subprocess.CalledProcessError:
+                # Abort if it fails to complete
+                return False
+        else:
+            try:
+                print("updating sources in: " + self.sourceDirectory)
+                process = subprocess.check_call(["git", "pull"], stdout=sys.stdout, stderr=sys.stderr, cwd=self.sourceDirectory)
+            except subprocess.CalledProcessError:
+                # Abort if it fails to complete
+                return False
+        return True
+
     def configure_build(self):
-        """Calls the met-build system (e.g. CMake) to generate the Makefiles"""
+        """Calls the meta-build system (e.g. CMake) to generate the Makefiles"""
 
         # determine the directory we will perform the build in and make sure it exists
         buildDirectory = self.buildDirectory
         if not os.path.exists( buildDirectory ):
             os.makedirs( buildDirectory )
 
-        #TODO hardcoded: read it from configuration files
-        configureCommand = [ 'cmake' ]
+        #read "cmake" or "qmake" value from config
+        configureCommand = [self.projectBuildSystem]
         configureCommand.append( self.sourceDirectory )
 
         try:

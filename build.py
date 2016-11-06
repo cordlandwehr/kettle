@@ -40,6 +40,11 @@ manager = BuildManager(arguments.project, arguments.platform)
 print("\nKettle Tool starting...")
 print("== Building Project: %s" %(arguments.project))
 
+# Update sources
+print("\n== Update Project Sources\n")
+if not manager.update_sources():
+    sys.exit("Configuration exited with non-zero code, assuming failure to configure for project %s." % arguments.project)
+
 # Configure the build
 print("\n== Configuring Build\n")
 if not manager.configure_build():
