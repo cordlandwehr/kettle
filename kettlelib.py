@@ -35,7 +35,7 @@ class BuildManager(object):
         self.platform = platform
 
         # generate build environment
-        self.buildDirectory = os.path.join("build", self.project)
+        self.buildDirectory = os.path.join("build", self.platform, self.project)
         self.sourceDirectory = os.path.abspath( os.path.join("source", self.project) )
         self.environment = self.generate_environment()
         print("== Build Environment: " + self.project)
