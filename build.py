@@ -34,23 +34,33 @@ parser.add_argument('--platform', type=str, default='linux')
 parser.add_argument('--compiler', type=str, choices=['gcc', 'clang'], default='gcc')
 arguments = parser.parse_args( )
 
+# initial status information
+print(PrintColors.Header + "Kettle Multi-Platform Building" + PrintColors.End)
+print("project:  " + PrintColors.Bold + arguments.project + PrintColors.End)
+print("platform: " + PrintColors.Bold + arguments.platform + PrintColors.End + "\n")
+
+# initializing manager prints environment
 manager = BuildManager(arguments.project, arguments.platform)
 
-# initial status information
-print("\nKettle Tool starting...")
-print("== Building Project: %s" %(arguments.project))
-
 # Update sources
-print("\n== Update Project Sources\n")
+print(PrintColors.Header + "== Update Project Sources" + PrintColors.End)
 if not manager.update_sources():
     sys.exit("Configuration exited with non-zero code, assuming failure to configure for project %s." % arguments.project)
+print()
 
-# Configure the build
-print("\n== Configuring Build\n")
+# Configure the build system configuration
+print(PrintColors.Header + "== Configuring Build" + PrintColors.End)
 if not manager.configure_build():
     sys.exit("Configuration exited with non-zero code, assuming failure to configure for project %s." % arguments.project)
+print()
 
 # Perform the build
-print("\n== Perform Build\n")
+print(PrintColors.Header + "== Perform Build" + PrintColors.End)
 if not manager.perform_build():
     sys.exit("Building exited with non-zero code, assuming failure to build the project %s." % arguments.project)
+print()
+
+# Perform the install step
+print(PrintColors.Header + "== Perform Install" + PrintColors.End)
+if not manager.perform_install():
+    sys.exit("Building exited with non-zero code, assuming failure to install the project %s." % arguments.project)

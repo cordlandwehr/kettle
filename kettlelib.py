@@ -27,6 +27,16 @@ import os
 import subprocess
 import sys
 
+class PrintColors:
+    Header = '\033[95m'
+    Info = '\033[94m'
+    Success = '\033[92m'
+    Warning = '\033[93m'
+    Error = '\033[91m'
+    End = '\033[0m'
+    Bold = '\033[1m'
+    Underline = '\033[4m'
+
 class BuildManager(object):
     # Make sure we have our configuration and the project we are building available
     def __init__(self, project, platform):
@@ -35,35 +45,40 @@ class BuildManager(object):
         self.platform = platform
 
         # generate build environment
-        self.buildDirectory = os.path.join("build", self.platform, self.project)
-        self.sourceDirectory = os.path.abspath( os.path.join("source", self.project) )
+        self.sourceDirectory = os.path.abspath(os.path.join("source", self.project))
+        self.buildDirectory = os.path.abspath(os.path.join("build", self.platform, self.project))
+        self.installDirectory = os.path.abspath(os.path.join("install", self.platform))
         self.environment = self.generate_environment()
-        print("== Build Environment: " + self.project)
+        print(PrintColors.Header + "## Build Environment" + PrintColors.End)
         for name, value in self.environment.items():
-            print("export " + name + "=" + value)
+            print(PrintColors.Info + "export " + name + "=" + value + PrintColors.End)
+        print()
 
         # read project configuration
-        print("== Parsing Project Configuration ")
+        print(PrintColors.Header + "## Parsing Project Configuration" + PrintColors.End)
+        configLocations = ['local/project/' + self.project + '.cfg', 'local/project/' + self.project + '.cfg']
+        print(configLocations)
         projectConfig = configparser.SafeConfigParser()
-        projectConfig.read(['local/project/' + self.project + '.cfg', 'local/project/' + self.project + '.cfg'])
+        projectConfig.read(configLocations)
         # get VCS system
         if not projectConfig.has_option('Project', 'vcs'):
             self.projectVcs = 'git'
-            print('- \"vcs\" key missing: falling back to \"git\"')
+            print(PrintColors.Error + '* \"vcs\" key missing: falling back to \"git\"' + PrintColors.End)
         else:
             self.projectVcs = projectConfig.get('Project', 'vcs')
         # get optional VCS URL
         if not projectConfig.has_option('Project', 'vcsUrl'):
             self.projectVcsUrl = ''
-            print('- \"vcsUrl\" key missing: will not be able to update or checkout source code')
+            print(PrintColors.Error + '* \"vcsUrl\" key missing: will not be able to update or checkout source code' + PrintColors.End)
         else:
             self.projectVcsUrl = projectConfig.get('Project', 'vcsUrl')
         # get build system (CMake for QMake)
         if not projectConfig.has_option('Project', 'buildSystem'):
             self.projectBuildSystem = ''
-            print('- \"buildSystem\" key missing: cannot perform build')
+            print(PrintColors.Error + '* \"buildSystem\" key missing: cannot perform build') + PrintColors.End
         else:
             self.projectBuildSystem = projectConfig.get('Project', 'buildSystem')
+        print()
         return
 
     def generate_environment(self):
@@ -104,7 +119,7 @@ class BuildManager(object):
                 return False
         else:
             try:
-                print("updating sources in: " + self.sourceDirectory)
+                print("updating sources in: " + PrintColors.Bold + self.sourceDirectory + PrintColors.End)
                 process = subprocess.check_call(["git", "pull"], stdout=sys.stdout, stderr=sys.stderr, cwd=self.sourceDirectory)
             except subprocess.CalledProcessError:
                 # Abort if it fails to complete
@@ -121,7 +136,8 @@ class BuildManager(object):
 
         #read "cmake" or "qmake" value from config
         configureCommand = [self.projectBuildSystem]
-        configureCommand.append( self.sourceDirectory )
+        configureCommand.append(self.sourceDirectory)
+        configureCommand.append("-DCMAKE_INSTALL_PREFIX=" + self.installDirectory)
 
         try:
             print(configureCommand)
@@ -132,14 +148,25 @@ class BuildManager(object):
         return True
 
     def perform_build(self):
-        """Calls make to perform the actual build"""
+        """Calls 'make' to perform the actual build"""
 
         # build directory must exist after configuration
-        buildDirectory = self.buildDirectory
-        buildCommand = [ 'make' ]
+        buildCommand = ["make"]
         try:
             print(buildCommand)
-            process = subprocess.check_call(buildCommand, stdout=sys.stdout, stderr=sys.stderr, cwd=buildDirectory, env=self.environment)
+            process = subprocess.check_call(buildCommand, stdout=sys.stdout, stderr=sys.stderr, cwd=self.buildDirectory, env=self.environment)
+        except subprocess.CalledProcessError:
+            # Abort if it fails to complete
+            return False
+        return True
+
+    def perform_install(self):
+        """Calls 'make install' to perform the install step"""
+
+        installCommand = ["make", "install"]
+        try:
+            print(installCommand)
+            process = subprocess.check_call(installCommand, stdout=sys.stdout, stderr=sys.stderr, cwd=self.buildDirectory, env=self.environment)
         except subprocess.CalledProcessError:
             # Abort if it fails to complete
             return False
