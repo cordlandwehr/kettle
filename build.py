@@ -43,24 +43,24 @@ print("platform: " + PrintColors.Bold + arguments.platform + PrintColors.End + "
 manager = BuildManager(arguments.project, arguments.platform)
 
 # Update sources
-print(PrintColors.Header + "== Update Project Sources" + PrintColors.End)
+print(PrintColors.Header + "## Update Project Sources" + PrintColors.End)
 if not manager.update_sources():
     sys.exit("Configuration exited with non-zero code, assuming failure to configure for project %s." % arguments.project)
 print()
 
 # Configure the build system configuration
-print(PrintColors.Header + "== Configuring Build" + PrintColors.End)
+print(PrintColors.Header + "## Configuring Build" + PrintColors.End)
 if not manager.configure_build():
     sys.exit("Configuration exited with non-zero code, assuming failure to configure for project %s." % arguments.project)
 print()
 
 # Perform the build
-print(PrintColors.Header + "== Perform Build" + PrintColors.End)
+print(PrintColors.Header + "## Perform Build" + PrintColors.End)
 if not manager.perform_build():
     sys.exit("Building exited with non-zero code, assuming failure to build the project %s." % arguments.project)
 print()
 
 # Perform the install step
-print(PrintColors.Header + "== Perform Install" + PrintColors.End)
+print(PrintColors.Header + "## Perform Install" + PrintColors.End)
 if not manager.perform_install():
     sys.exit("Building exited with non-zero code, assuming failure to install the project %s." % arguments.project)
