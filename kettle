@@ -34,10 +34,12 @@ parser = argparse.ArgumentParser(description='Semi-automatic build tool for trig
 parser.add_argument('--project', type=str)
 parser.add_argument('--platform', type=str, default='linux')
 parser.add_argument('--compiler', type=str, choices=['gcc', 'clang'], default='gcc')
-arguments = parser.parse_args( )
+arguments = parser.parse_args()
 
 # initial status information
 print(PrintColors.Header + "Kettle Multi-Platform Building" + PrintColors.End)
+if arguments.project is None:
+    sys.exit(PrintColors.Error + "no project specified, use \"--project=\"" + PrintColors.End) 
 print("project:  " + PrintColors.Bold + arguments.project + PrintColors.End)
 print("platform: " + PrintColors.Bold + arguments.platform + PrintColors.End + "\n")
 
