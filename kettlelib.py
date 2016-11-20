@@ -58,7 +58,7 @@ class BuildManager(object):
         print(PrintColors.Header + "## Parsing Project Configuration" + PrintColors.End)
         configLocations = ['local/project/' + self.project + '.cfg', 'local/project/' + self.project + '.cfg']
         print(configLocations)
-        projectConfig = configparser.SafeConfigParser()
+        projectConfig = configparser.RawConfigParser()
         projectConfig.read(configLocations)
         # get VCS system
         if not projectConfig.has_option('Project', 'vcs'):
