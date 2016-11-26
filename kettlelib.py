@@ -60,6 +60,16 @@ class BuildManager(object):
         print(configLocations)
         projectConfig = configparser.RawConfigParser()
         projectConfig.read(configLocations)
+        # get Make extra arguments
+        if not projectConfig.has_option('Default', 'makeArguments'):
+            self.defaultMakeArguments = ''
+        else:
+            self.defaultMakeArguments = projectConfig.get('Default', 'makeArguments').split()
+        # get CMake extra arguments
+        if not projectConfig.has_option('Default', 'cmakeArguments'):
+            self.defaultCmakeArguments = ''
+        else:
+            self.defaultCmakeArguments = projectConfig.get('Default', 'cmakeArguments').split()
         # get VCS system
         if not projectConfig.has_option('Project', 'vcs'):
             self.projectVcs = 'git'
@@ -146,8 +156,9 @@ class BuildManager(object):
 
         #read "cmake" or "qmake" value from config
         configureCommand = [self.projectBuildSystem]
-        configureCommand.append(self.sourceDirectory)
+        configureCommand += self.defaultCmakeArguments
         configureCommand.append("-DCMAKE_INSTALL_PREFIX=" + self.installDirectory)
+        configureCommand.append(self.sourceDirectory)
 
         try:
             print(configureCommand)
@@ -162,6 +173,7 @@ class BuildManager(object):
 
         # build directory must exist after configuration
         buildCommand = ["make"]
+        buildCommand += self.defaultMakeArguments
         try:
             print(buildCommand)
             process = subprocess.check_call(buildCommand, stdout=sys.stdout, stderr=sys.stderr, cwd=self.buildDirectory, env=self.environment)
@@ -174,6 +186,7 @@ class BuildManager(object):
         """Calls 'make install' to perform the install step"""
 
         installCommand = ["make", "install"]
+        installCommand += self.defaultMakeArguments
         try:
             print(installCommand)
             process = subprocess.check_call(installCommand, stdout=sys.stdout, stderr=sys.stderr, cwd=self.buildDirectory, env=self.environment)

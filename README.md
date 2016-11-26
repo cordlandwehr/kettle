@@ -20,10 +20,16 @@ Note that Kettle combines several configuration files for a single project build
 Thereby, configuration files can override values from other files.
 
 ## Project Configuration
-* Section "Environment":
-** any "variable=value" element in this section is exported as environment value
-* Section "Project"
-** vcs: git (currently only option)
-** vcsGitSubmodules: true/false, enables git submodule updates if vcs is Git
-** vcsUrl: url to resository
-** buildSystem: cmake (currently only option)
+
+### Section "Environment"
+* any "variable=value" element in this section is exported as environment value
+
+### Section "Default
+* makeArguments: any list of arguments to be appended to the make call (eg. "-j4")
+* cmakeArguments: any list of arguments to be appended to the cmake call
+
+### Section "Project"
+* vcs: git (currently only option)
+* vcsGitSubmodules: true/false, enables git submodule updates if vcs is Git
+* vcsUrl: url to resository
+* buildSystem: cmake (currently only option)
