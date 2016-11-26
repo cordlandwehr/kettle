@@ -66,6 +66,10 @@ class BuildManager(object):
             print(PrintColors.Error + '* \"vcs\" key missing: falling back to \"git\"' + PrintColors.End)
         else:
             self.projectVcs = projectConfig.get('Project', 'vcs')
+            if not projectConfig.has_option('Project', 'vcsGitSubmodules'):
+                self.projectVcsGitSubmodules = False
+            else:
+                self.projectVcsGitSubmodules = projectConfig.get('Project', 'vcsGitSubmodules')
         # get optional VCS URL
         if not projectConfig.has_option('Project', 'vcsUrl'):
             self.projectVcsUrl = ''
@@ -113,7 +117,10 @@ class BuildManager(object):
         if not os.path.exists(self.sourceDirectory) and self.projectVcsUrl != '':
             try:
                 print("checking out to: " + self.sourceDirectory)
-                process = subprocess.check_call(["git", "clone", self.projectVcsUrl, self.sourceDirectory], stdout=sys.stdout, stderr=sys.stderr)
+                if self.projectVcsGitSubmodules:
+                    process = subprocess.check_call(["git", "clone", self.projectVcsUrl, self.sourceDirectory], stdout=sys.stdout, stderr=sys.stderr)
+                else:
+                    process = subprocess.check_call(["git", "clone", "--recursive", self.projectVcsUrl, self.sourceDirectory], stdout=sys.stdout, stderr=sys.stderr)
             except subprocess.CalledProcessError:
                 # Abort if it fails to complete
                 return False
@@ -121,6 +128,8 @@ class BuildManager(object):
             try:
                 print("updating sources in: " + PrintColors.Bold + self.sourceDirectory + PrintColors.End)
                 process = subprocess.check_call(["git", "pull"], stdout=sys.stdout, stderr=sys.stderr, cwd=self.sourceDirectory)
+                if self.projectVcsGitSubmodules:
+                    process = subprocess.check_call(["git", "submodule", "update", "--recursive"], stdout=sys.stdout, stderr=sys.stderr, cwd=self.sourceDirectory)
             except subprocess.CalledProcessError:
                 # Abort if it fails to complete
                 return False
