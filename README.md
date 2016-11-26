@@ -12,3 +12,14 @@ Kettle ships a set of default build options for specific platforms, yet it does 
 - local/project/*.cfg: your local preject specific configurations
 - local/environment.cfg: your local encvironment setup
 - local/kettle.cfg: your local configurations for kettle
+
+
+
+# Configuration Options
+
+## Project Configuration
+* Section "Project"
+** vcs: git (currently only option)
+** vcsGitSubmodules: true/false, enables git submodule updates if vcs is Git
+** vcsUrl: url to resository
+** buildSystem: cmake (currently only option)
