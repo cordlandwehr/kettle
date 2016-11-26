@@ -105,6 +105,7 @@ class BuildManager(object):
                 environment[var] = value + ":" + environment[var]
             else:
                 environment[var] = value
+        environment['CMAKE_PREFIX_PATH'] = environment['CMAKE_PREFIX_PATH'] + ':' + self.installDirectory
         return environment
 
     def update_sources(self):
