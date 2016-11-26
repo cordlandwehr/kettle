@@ -10,14 +10,18 @@ Kettle ships a set of default build options for specific platforms, yet it does 
 
 - local/platform/*.cfg: such configurations override any configurations specified in conf/platform/*.cfg
 - local/project/*.cfg: your local preject specific configurations
-- local/environment.cfg: your local encvironment setup
+- local/environment.cfg: your local environment setup
 - local/kettle.cfg: your local configurations for kettle
 
 
 
 # Configuration Options
+Note that Kettle combines several configuration files for a single project build.
+Thereby, configuration files can override values from other files.
 
 ## Project Configuration
+* Section "Environment":
+** any "variable=value" element in this section is exported as environment value
 * Section "Project"
 ** vcs: git (currently only option)
 ** vcsGitSubmodules: true/false, enables git submodule updates if vcs is Git

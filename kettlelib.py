@@ -100,7 +100,7 @@ class BuildManager(object):
         # update environment with
         envConfig = configparser.SafeConfigParser()
         envConfig.read(['config/platform/' + self.platform + '.cfg', 'local/platform' + self.platform, 'environment.cfg'])
-        for var, value in envConfig.items("Default"):
+        for var, value in envConfig.items("Environment"):
             if var in environment:
                 environment[var] = value + ":" + environment[var]
             else:
