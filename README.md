@@ -27,6 +27,7 @@ Thereby, configuration files can override values from other files.
 ### Section "Default
 * makeArguments: any list of arguments to be appended to the make call (eg. "-j4")
 * cmakeArguments: any list of arguments to be appended to the cmake call
+* environmentScript: path to bash-script that sets environment variables (e.g. Yocto generated SDK environment setup script)
 
 ### Section "Project"
 * vcs: git (currently only option)

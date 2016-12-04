@@ -26,6 +26,7 @@ import multiprocessing
 import os
 import subprocess
 import sys
+import json
 
 class PrintColors:
     Header = '\033[95m'
@@ -95,27 +96,47 @@ class BuildManager(object):
         print()
         return
 
+    def source_environment_script(self, path):
+        "parses a given bash file"
+
+        source = 'source /tmp/testenv.sh' #TODO use correct path here
+        dump = '/usr/bin/python -c "import os, json;print json.dumps(dict(os.environ))"'
+        # "env -i /bin/bash --norc --noprofile" cleans bash environment from mostly all environment setups (exclucing PWD)
+        pipe = subprocess.Popen(['env', '-i', '/bin/bash', '--norc', '--noprofile', '-c', '%s && %s' %(source,dump)], stdout=subprocess.PIPE)
+        environment = json.loads(pipe.stdout.read().decode(sys.stdout.encoding))
+        return environment
+
     def generate_environment(self):
         """Generate and return configuration and build environment"""
-
-        # these values are loaded from the system and optionally prefixed from configuration files
-        systemEnvVariables = [
-            'CMAKE_PREFIX_PATH', 'XDG_CONFIG_DIRS', 'XDG_DATA_DIRS', 'PATH', 'LD_LIBRARY_PATH', 'PKG_CONFIG_PATH', 'PYTHONPATH',
-            'PERL5LIB', 'QT_PLUGIN_PATH', 'QML_IMPORT_PATH', 'QML2_IMPORT_PATH', 'QMAKEFEATURES', 'PYTHON3PATH', 'CPLUS_INCLUDE_PATH'
-        ]
-        environment = {}
-        for var in systemEnvVariables:
-            environment[var] = os.getenv(var, "")
 
         # update environment with
         envConfig = configparser.SafeConfigParser()
         envConfig.read(['config/platform/' + self.platform + '.cfg', 'local/platform' + self.platform, 'environment.cfg'])
+
+        # setup base environment: either parse environment script or otherwise get them from system
+        environment = {}
+        if envConfig.has_option('Default', 'environmentScript') and envConfig.get('Default', 'environmentScript') != '':
+            envScript = envConfig.get('Default', 'environmentScript')
+            environment = self.source_environment_script(envScript)
+        else:
+            # these values are loaded from the host system
+            systemEnvVariables = [
+                'CMAKE_PREFIX_PATH', 'XDG_CONFIG_DIRS', 'XDG_DATA_DIRS', 'PATH', 'LD_LIBRARY_PATH', 'PKG_CONFIG_PATH', 'PYTHONPATH',
+                'PERL5LIB', 'QT_PLUGIN_PATH', 'QML_IMPORT_PATH', 'QML2_IMPORT_PATH', 'QMAKEFEATURES', 'PYTHON3PATH', 'CPLUS_INCLUDE_PATH'
+            ]
+            for var in systemEnvVariables:
+                environment[var] = os.getenv(var, "")
+
+        # override base environment variables with specified
         for var, value in envConfig.items("Environment"):
             if var in environment:
                 environment[var] = value + ":" + environment[var]
             else:
                 environment[var] = value
-        environment['CMAKE_PREFIX_PATH'] = environment['CMAKE_PREFIX_PATH'] + ':' + self.installDirectory
+        if 'CMAKE_PREFIX_PATH' in environment:
+            environment['CMAKE_PREFIX_PATH'] = environment['CMAKE_PREFIX_PATH'] + ':' + self.installDirectory
+        else:
+            environment['CMAKE_PREFIX_PATH'] = self.installDirectory
         return environment
 
     def update_sources(self):
