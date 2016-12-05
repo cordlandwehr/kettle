@@ -99,11 +99,11 @@ class BuildManager(object):
     def source_environment_script(self, path):
         "parses a given bash file"
 
-        source = 'source /tmp/testenv.sh' #TODO use correct path here
+        source = 'source ' + path
         dump = '/usr/bin/python -c "import os, json;print json.dumps(dict(os.environ))"'
         # "env -i /bin/bash --norc --noprofile" cleans bash environment from mostly all environment setups (exclucing PWD)
         pipe = subprocess.Popen(['env', '-i', '/bin/bash', '--norc', '--noprofile', '-c', '%s && %s' %(source,dump)], stdout=subprocess.PIPE)
-        environment = json.loads(pipe.stdout.read().decode(sys.stdout.encoding))
+        environment = json.loads(pipe.stdout.read().decode('utf-8'))
         return environment
 
     def generate_environment(self):
