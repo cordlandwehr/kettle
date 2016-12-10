@@ -100,10 +100,11 @@ class BuildManager(object):
         "parses a given bash file"
 
         source = 'source ' + path
-        dump = '/usr/bin/python -c "import os, json;print json.dumps(dict(os.environ))"'
+        dump = '/usr/bin/python -E -c "import os, json;print json.dumps(dict(os.environ))"'
         # "env -i /bin/bash --norc --noprofile" cleans bash environment from mostly all environment setups (exclucing PWD)
-        pipe = subprocess.Popen(['env', '-i', '/bin/bash', '--norc', '--noprofile', '-c', '%s && %s' %(source,dump)], stdout=subprocess.PIPE)
-        environment = json.loads(pipe.stdout.read().decode('utf-8'))
+        pipe = subprocess.Popen(['env', '-i', '/bin/bash', '--norc', '--noprofile', '-c', '%s && %s' %(source, dump)], stdout=subprocess.PIPE)
+        output = pipe.communicate()[0].decode('utf-8')
+        environment = json.loads(output)
         return environment
 
     def generate_environment(self):
