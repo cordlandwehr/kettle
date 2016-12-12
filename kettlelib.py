@@ -57,20 +57,20 @@ class BuildManager(object):
 
         # read project configuration
         print(PrintColors.Header + "## Parsing Project Configuration" + PrintColors.End)
-        configLocations = ['local/project/' + self.project + '.cfg', 'local/project/' + self.project + '.cfg']
+        configLocations = ['conf/platform/' + self.platform + '.cfg', 'local/platform/' + self.platform + '.cfg', 'conf/project/' + self.project + '.cfg', 'local/project/' + self.project + '.cfg']
         print(configLocations)
         projectConfig = configparser.RawConfigParser()
         projectConfig.read(configLocations)
         # get Make extra arguments
-        if not projectConfig.has_option('Default', 'makeArguments'):
+        if not projectConfig.has_option('Project', 'makeArguments'):
             self.defaultMakeArguments = ''
         else:
-            self.defaultMakeArguments = projectConfig.get('Default', 'makeArguments').split()
+            self.defaultMakeArguments = projectConfig.get('Project', 'makeArguments').split()
         # get CMake extra arguments
-        if not projectConfig.has_option('Default', 'cmakeArguments'):
+        if not projectConfig.has_option('Project', 'cmakeArguments'):
             self.defaultCmakeArguments = ''
         else:
-            self.defaultCmakeArguments = projectConfig.get('Default', 'cmakeArguments').split()
+            self.defaultCmakeArguments = projectConfig.get('Project', 'cmakeArguments').split()
         # get VCS system
         if not projectConfig.has_option('Project', 'vcs'):
             self.projectVcs = 'git'

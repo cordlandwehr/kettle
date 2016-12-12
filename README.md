@@ -37,8 +37,6 @@ Thereby, configuration files can override values from other files.
 * any "variable=value" element in this section is exported as environment value
 
 ### Section "Default
-* makeArguments: any list of arguments to be appended to the make call (eg. "-j4")
-* cmakeArguments: any list of arguments to be appended to the cmake call
 * environmentScript: path to bash-script that sets environment variables (e.g. Yocto generated SDK environment setup script)
 
 ### Section "Project"
@@ -46,3 +44,5 @@ Thereby, configuration files can override values from other files.
 * vcsGitSubmodules: true/false, enables git submodule updates if vcs is Git
 * vcsUrl: url to resository
 * buildSystem: cmake (currently only option)
+* makeArguments: any list of arguments to be appended to the make call (eg. "-j4")
+* cmakeArguments: any list of arguments to be appended to the cmake call
