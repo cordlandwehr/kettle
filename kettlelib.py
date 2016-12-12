@@ -105,6 +105,8 @@ class BuildManager(object):
         pipe = subprocess.Popen(['env', '-i', '/bin/bash', '--norc', '--noprofile', '-c', '%s && %s' %(source, dump)], stdout=subprocess.PIPE)
         output = pipe.communicate()[0].decode('utf-8')
         environment = json.loads(output)
+        if '_' in environment: # cleanup
+            del environment['_']
         return environment
 
     def generate_environment(self):
