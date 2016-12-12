@@ -111,7 +111,7 @@ class BuildManager(object):
         """Generate and return configuration and build environment"""
 
         # update environment with
-        envConfig = configparser.SafeConfigParser()
+        envConfig = configparser.RawConfigParser()
         envConfig.read(['config/platform/' + self.platform + '.cfg', 'local/platform' + self.platform, 'environment.cfg'])
 
         # setup base environment: either parse environment script or otherwise get them from system
@@ -128,12 +128,14 @@ class BuildManager(object):
             for var in systemEnvVariables:
                 environment[var] = os.getenv(var, "")
 
-        # override base environment variables with specified
-        for var, value in envConfig.items("Environment"):
-            if var in environment:
-                environment[var] = value + ":" + environment[var]
-            else:
-                environment[var] = value
+        # override base environment variables with specified ones
+        if envConfig.has_section("Environment"):
+            for var, value in envConfig.items("Environment"):
+                if var in environment:
+                    environment[var] = value + ":" + environment[var]
+                else:
+                    environment[var] = value
+        # adapt CMAKE_PREFIX_PATH for install directory
         if 'CMAKE_PREFIX_PATH' in environment:
             environment['CMAKE_PREFIX_PATH'] = environment['CMAKE_PREFIX_PATH'] + ':' + self.installDirectory
         else:
