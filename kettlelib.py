@@ -115,7 +115,7 @@ class BuildManager(object):
         # update environment with
         envConfig = configparser.RawConfigParser()
         envConfig.optionxform = str # preserve case sensitivity of options and environment variables
-        envConfig.read(['config/platform/' + self.platform + '.cfg', 'local/platform' + self.platform, 'environment.cfg'])
+        envConfig.read(['config/platform/' + self.platform + '.cfg', 'local/platform/' + self.platform + '.cfg', 'environment.cfg'])
 
         # setup base environment: either parse environment script or otherwise get them from system
         environment = {}
