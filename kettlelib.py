@@ -24,6 +24,7 @@
 import configparser
 import multiprocessing
 import os
+import shutil
 import subprocess
 import sys
 import json
@@ -171,6 +172,15 @@ class BuildManager(object):
             except subprocess.CalledProcessError:
                 # Abort if it fails to complete
                 return False
+        return True
+
+    def purge_build_directory(self):
+        """Recursively purge the project's build directory"""
+
+        try:
+            shutil.rmtree(self.buildDirectory)
+        except OSError:
+            return False
         return True
 
     def configure_build(self):

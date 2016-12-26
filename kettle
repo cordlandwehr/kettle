@@ -35,6 +35,7 @@ parser.add_argument('--project', type=str)
 parser.add_argument('--platform', type=str, default='linux')
 parser.add_argument('--compiler', type=str, choices=['gcc', 'clang'], default='gcc')
 parser.add_argument('--no-src', action='store_true')
+parser.add_argument('--refresh-build', action='store_true')
 arguments = parser.parse_args()
 
 # initial status information
@@ -57,15 +58,25 @@ else:
 print()
 
 # Configure the build system configuration
-print(PrintColors.Header + "## Configuring Build" + PrintColors.End)
+print(PrintColors.Header + "## Configure Build" + PrintColors.End)
+if arguments.refresh_build:
+    print("purge build directory: " + PrintColors.Bold + manager.buildDirectory + PrintColors.End)
+    if not manager.purge_build_directory():
+        sys.exit(PrintColors.Error + "Could not purge build directory %s." % manager.buildDirectory + PrintColors.End)
+    else:
+        print(PrintColors.Info + "directory purged" + PrintColors.End)
+        print()
+print("configure build directory: " + PrintColors.Bold + manager.buildDirectory + PrintColors.End)
 if not manager.configure_build():
     sys.exit("Configuration exited with non-zero code, assuming failure to configure for project %s." % arguments.project)
+else:
+    print(PrintColors.Info + "build configured" + PrintColors.End)
 print()
 
 # Perform the build
 print(PrintColors.Header + "## Perform Build" + PrintColors.End)
 if not manager.perform_build():
-    sys.exit("Building exited with non-zero code, assuming failure to build the project %s." % arguments.project)
+    sys.exit(PrintColors.Error + "Building exited with non-zero code, assuming failure to build the project %s." % arguments.project + PrintColors.End)
 print()
 
 # Perform the install step
