@@ -106,7 +106,7 @@ class BuildManager(object):
         pipe = subprocess.Popen(['env', '-i', '/bin/bash', '--norc', '--noprofile', '-c', '%s && %s' %(source, dump)], stdout=subprocess.PIPE)
         output = pipe.communicate()[0].decode('utf-8')
         environment = json.loads(output)
-        if '_' in environment: # cleanup
+        if '_' in environment: # cleanup unneeded variables
             del environment['_']
         return environment
 
@@ -122,7 +122,10 @@ class BuildManager(object):
         environment = {}
         if envConfig.has_option('Default', 'environmentScript') and envConfig.get('Default', 'environmentScript') != '':
             envScript = envConfig.get('Default', 'environmentScript')
-            environment = self.source_environment_script(envScript)
+            if os.path.exists(envScript):
+                environment = self.source_environment_script(envScript)
+            else:
+                print(PrintColors.Warning + "skip sourcing environment script, file does not exist: " + envScript + PrintColors.End)
         else:
             # these values are loaded from the host system
             systemEnvVariables = [
