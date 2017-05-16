@@ -160,9 +160,9 @@ class BuildManager(object):
             try:
                 print("checking out to: " + self.sourceDirectory)
                 if self.projectVcsGitSubmodules:
-                    process = subprocess.check_call(["git", "clone", self.projectVcsUrl, self.sourceDirectory], stdout=sys.stdout, stderr=sys.stderr)
-                else:
                     process = subprocess.check_call(["git", "clone", "--recursive", self.projectVcsUrl, self.sourceDirectory], stdout=sys.stdout, stderr=sys.stderr)
+                else:
+                    process = subprocess.check_call(["git", "clone", self.projectVcsUrl, self.sourceDirectory], stdout=sys.stdout, stderr=sys.stderr)
             except subprocess.CalledProcessError:
                 # Abort if it fails to complete
                 return False
