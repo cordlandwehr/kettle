@@ -144,7 +144,7 @@ class BuildManager(object):
                     environment[var] = value
         # adapt CMAKE_PREFIX_PATH for install directory
         if 'CMAKE_PREFIX_PATH' in environment:
-            environment['CMAKE_PREFIX_PATH'] = environment['CMAKE_PREFIX_PATH'] + ':' + self.installDirectory
+            environment['CMAKE_PREFIX_PATH'] = '"' + environment['CMAKE_PREFIX_PATH'] + ';' + self.installDirectory + '"'
         else:
             environment['CMAKE_PREFIX_PATH'] = self.installDirectory
         return environment
@@ -198,6 +198,7 @@ class BuildManager(object):
         configureCommand = [self.projectBuildSystem]
         configureCommand += self.defaultCmakeArguments
         configureCommand.append("-DCMAKE_INSTALL_PREFIX=" + self.installDirectory)
+        configureCommand.append("-DCMAKE_PREFIX_PATH=" + self.installDirectory  + "/")
         configureCommand.append(self.sourceDirectory)
 
         try:
