@@ -46,3 +46,9 @@ Thereby, configuration files can override values from other files.
 * buildSystem: cmake (currently only option)
 * makeArguments: any list of arguments to be appended to the make call (eg. "-j4")
 * cmakeArguments: any list of arguments to be appended to the cmake call
+
+## Run Test Suite
+
+```
+python run_tests.py
+~~~
